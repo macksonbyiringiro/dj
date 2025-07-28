@@ -1,14 +1,17 @@
 
-export type Role = 'user' | 'assistant';
-
-export interface Message {
-  id: string;
-  role: Role;
-  text: string;
+export enum UserRole {
+  Seller = 'Seller',
+  Buyer = 'Buyer',
 }
 
-// History for the Gemini API
-export interface ChatHistory {
-    role: "user" | "model";
-    parts: { text: string }[];
+export interface ProductDescription {
+  english: string;
+  kinyarwanda: string;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  priceUSD: number;
+  description: ProductDescription;
 }
