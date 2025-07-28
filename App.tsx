@@ -1,8 +1,8 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI, Chat, GenerateContentResponse } from "@google/genai";
 import type { Message, Role, ChatHistory } from './types';
 import {
-  LockIcon,
   MicrophoneIcon,
   SoundOnIcon,
   SoundOffIcon,
@@ -10,7 +10,6 @@ import {
   UserIcon,
   AssistantIcon,
   SpinnerIcon,
-  DeleteIcon,
 } from './components/IconComponents';
 
 // Add this to solve TypeScript errors for vendor-prefixed APIs
@@ -20,8 +19,6 @@ declare global {
         webkitSpeechRecognition: any;
     }
 }
-
-const CORRECT_PIN = "2024";
 
 // Speech Recognition setup
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -33,79 +30,6 @@ if (SpeechRecognition) {
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
 }
-
-const PinScreen = ({ onUnlock }: { onUnlock: () => void }) => {
-  const [pin, setPin] = useState("");
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    if (pin.length === 4) {
-      if (pin === CORRECT_PIN) {
-        onUnlock();
-      } else {
-        setError(true);
-        setTimeout(() => {
-          setError(false);
-          setPin("");
-        }, 800);
-      }
-    }
-  }, [pin, onUnlock]);
-
-  const handleKeyClick = (key: string) => {
-    if (pin.length < 4) {
-      setPin(pin + key);
-    }
-  };
-
-  const handleDelete = () => {
-    setPin(pin.slice(0, -1));
-  };
-
-  const PinDots = () => (
-    <div className={`flex space-x-4 mb-6 ${error ? 'shake' : ''}`}>
-      {[...Array(4)].map((_, i) => (
-        <div
-          key={i}
-          className={`w-4 h-4 rounded-full border-2 ${pin.length > i ? 'bg-indigo-400 border-indigo-400 pin-dot-filled' : 'border-gray-500'}`}
-        ></div>
-      ))}
-    </div>
-  );
-
-  const Keypad = () => {
-    const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "del"];
-    return (
-      <div className="grid grid-cols-3 gap-4 w-full max-w-xs">
-        {keys.map((key) =>
-          key === "" ? (
-            <div key={key}></div>
-          ) : (
-            <button
-              key={key}
-              onClick={() => (key === "del" ? handleDelete() : handleKeyClick(key))}
-              className="pin-key text-2xl font-bold bg-gray-700/50 hover:bg-gray-600/70 rounded-full aspect-square flex items-center justify-center"
-              aria-label={key === 'del' ? 'Delete' : `Number ${key}`}
-            >
-              {key === "del" ? <DeleteIcon className="w-8 h-8" /> : key}
-            </button>
-          )
-        )}
-      </div>
-    );
-  };
-  
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-gray-200 p-4">
-      <LockIcon className="w-12 h-12 mb-4 text-indigo-400" />
-      <h1 className="text-2xl font-bold mb-2">Injira</h1>
-      <p className="text-gray-400 mb-6">Shyiramo umubare w'ibanga.</p>
-      <PinDots />
-      {error && <p className="text-red-500 mb-4 text-sm">Umubare w'ibanga siwo. Ongera ugerageze.</p>}
-      <Keypad />
-    </div>
-  );
-};
 
 const ChatScreen = () => {
   const [messages, setMessages] = useState<Message[]>([
@@ -154,9 +78,11 @@ const ChatScreen = () => {
     }
   }, [messages, isSoundOn]);
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
-    const userMessage: Message = { id: Date.now().toString(), role: 'user', text: input };
+  const handleSend = async (messageText?: string) => {
+    const textToSend = typeof messageText === 'string' ? messageText : input;
+    if (!textToSend.trim() || isLoading) return;
+
+    const userMessage: Message = { id: Date.now().toString(), role: 'user', text: textToSend };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
@@ -165,7 +91,7 @@ const ChatScreen = () => {
         if (!chatRef.current) {
             throw new Error("Chat not initialized.");
         }
-        const response: GenerateContentResponse = await chatRef.current.sendMessage({ message: input });
+        const response: GenerateContentResponse = await chatRef.current.sendMessage({ message: textToSend });
         const assistantMessage: Message = { id: Date.now().toString() + '-ai', role: 'assistant', text: response.text };
         setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
@@ -197,8 +123,10 @@ const ChatScreen = () => {
     };
     recognition.onresult = (event: any) => {
         const transcript = event.results[0][0].transcript;
-        setInput(transcript);
-        if(transcript) handleSend(); // auto send after speech
+        setInput(transcript); // Show user what was heard
+        if(transcript) {
+            handleSend(transcript); // Pass transcript directly to avoid stale state
+        }
     };
     recognition.start();
   };
@@ -247,7 +175,7 @@ const ChatScreen = () => {
           <button onClick={handleListen} className="p-2 rounded-full hover:bg-gray-600" disabled={isLoading}>
             <MicrophoneIcon isListening={isListening} />
           </button>
-          <button onClick={handleSend} className="p-2 rounded-full hover:bg-indigo-500 bg-indigo-600 ml-2" disabled={isLoading || !input.trim()}>
+          <button onClick={() => handleSend()} className="p-2 rounded-full hover:bg-indigo-500 bg-indigo-600 ml-2" disabled={isLoading || !input.trim()}>
             <SendIcon className="w-6 h-6 text-white" />
           </button>
         </div>
@@ -258,12 +186,6 @@ const ChatScreen = () => {
 
 
 const App = () => {
-    const [isUnlocked, setIsUnlocked] = useState(false);
-
-    if (!isUnlocked) {
-        return <PinScreen onUnlock={() => setIsUnlocked(true)} />;
-    }
-
     return <ChatScreen />;
 };
 
