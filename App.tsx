@@ -33,7 +33,7 @@ if (SpeechRecognition) {
 
 const ChatScreen = () => {
   const [messages, setMessages] = useState<Message[]>([
-      { id: 'welcome-1', role: 'assistant', text: "Muraho! Nitwa Kunga, umuhanga wagufasha. Nshobora kukwigisha indimi, kuganira nawe, n'ibindi byinshi. Ubifuzamo iki uyu munsi?" }
+      { id: 'welcome-1', role: 'assistant', text: "Muraho! Nitwa Kunga. Ndi umuhanga wagufasha mu bintu byinshi, nko kwiga indimi, kuganira ku nkuru zigezweho nka politiki ya YouTube ku bikorwa bya AI, n'ibindi. Wambaza ikibazo wifuza uyu munsi." }
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
