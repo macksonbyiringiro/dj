@@ -3,6 +3,5 @@
   "description": "A business application for sellers and buyers featuring QR code-based product management, multi-currency and multi-lingual display, and a product verification system.",
   "requestFramePermissions": [
     "camera"
-  ],
-  "prompt": ""
+  ]
 }

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   QrCode,
@@ -14,6 +13,15 @@ import {
   LoaderCircle,
   X,
   Scan,
+  Settings,
+  KeyRound,
+  Image,
+  Sparkles,
+  Search,
+  Eye,
+  EyeOff,
+  MessageCircle,
+  Send,
 } from 'lucide-react';
 
 export type IconName =
@@ -29,7 +37,16 @@ export type IconName =
   | 'chevron-left'
   | 'loader'
   | 'close'
-  | 'scan';
+  | 'scan'
+  | 'settings'
+  | 'key'
+  | 'image'
+  | 'generate'
+  | 'search'
+  | 'eye'
+  | 'eye-off'
+  | 'message'
+  | 'send';
 
 interface IconProps {
   name: IconName;
@@ -64,6 +81,24 @@ export const Icon: React.FC<IconProps> = ({ name, className }) => {
         return <X className={className} />;
     case 'scan':
         return <Scan className={className} />;
+    case 'settings':
+        return <Settings className={className} />;
+    case 'key':
+        return <KeyRound className={className} />;
+    case 'image':
+        return <Image className={className} />;
+    case 'generate':
+        return <Sparkles className={className} />;
+    case 'search':
+        return <Search className={className} />;
+    case 'eye':
+        return <Eye className={className} />;
+    case 'eye-off':
+        return <EyeOff className={className} />;
+    case 'message':
+        return <MessageCircle className={className} />;
+    case 'send':
+        return <Send className={className} />;
     default:
       return null;
   }
